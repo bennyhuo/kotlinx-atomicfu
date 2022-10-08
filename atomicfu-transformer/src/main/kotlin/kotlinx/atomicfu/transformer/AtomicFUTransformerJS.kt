@@ -77,13 +77,34 @@ class AtomicFUTransformerJS(
     private fun transformFile(file: File): ByteArray {
         val p = Parser(CompilerEnvirons())
         val root = p.parse(FileReader(file), null, 0)
+        file.toOutputFile("${file.nameWithoutExtension}-0-original.js")
+            .mkdirsAndWrite(root.toSource().toByteArray())
         root.visit(DependencyEraser())
+        file.toOutputFile("${file.nameWithoutExtension}-1-DependencyEraser.js")
+            .mkdirsAndWrite(root.toSource().toByteArray())
         root.visit(AtomicConstructorDetector())
+        file.toOutputFile("${file.nameWithoutExtension}-2-AtomicConstructorDetector.js")
+            .mkdirsAndWrite(root.toSource().toByteArray())
         root.visit(FieldDelegatesVisitor())
+        file.toOutputFile("${file.nameWithoutExtension}-3-FieldDelegatesVisitor.js")
+            .mkdirsAndWrite(root.toSource().toByteArray())
+
         root.visit(DelegatedPropertyAccessorsVisitor())
+        file.toOutputFile("${file.nameWithoutExtension}-4-DelegatedPropertyAccessorsVisitor.js")
+            .mkdirsAndWrite(root.toSource().toByteArray())
+
         root.visit(TopLevelDelegatedFieldsAccessorVisitor())
+        file.toOutputFile("${file.nameWithoutExtension}-5-TopLevelDelegatedFieldsAccessorVisitor.js")
+            .mkdirsAndWrite(root.toSource().toByteArray())
+
         root.visit(TransformVisitor())
+        file.toOutputFile("${file.nameWithoutExtension}-6-TransformVisitor.js")
+            .mkdirsAndWrite(root.toSource().toByteArray())
+
         root.visit(AtomicOperationsInliner())
+        file.toOutputFile("${file.nameWithoutExtension}-7-AtomicOperationsInliner.js")
+            .mkdirsAndWrite(root.toSource().toByteArray())
+
         return root.eraseGetValue().toByteArray()
     }
 

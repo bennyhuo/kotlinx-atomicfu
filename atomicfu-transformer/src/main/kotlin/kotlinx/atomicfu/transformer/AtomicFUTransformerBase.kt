@@ -19,6 +19,9 @@ abstract class AtomicFUTransformerBase(
     protected fun File.toOutputFile(): File =
         outputDir / relativeTo(inputDir).toString()
 
+    protected fun File.toOutputFile(name: String): File =
+        toOutputFile().parentFile / name
+
     private val logger = LoggerFactory.getLogger(this::class.java)
 
     protected fun File.mkdirsAndWrite(outBytes: ByteArray) {

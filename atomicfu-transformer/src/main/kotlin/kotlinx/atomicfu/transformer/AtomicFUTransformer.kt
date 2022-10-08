@@ -292,6 +292,7 @@ class AtomicFUTransformer(
             interfaces: Array<out String>?
         ) {
             className = name
+            println("${this.javaClass.simpleName}#visit: $name, $signature")
             super.visit(version, access, name, signature, superName, interfaces)
         }
     }
@@ -334,6 +335,7 @@ class AtomicFUTransformer(
                 info("$methodId method to be removed")
                 removeMethods += methodId
             }
+            println("visitMethod: $name, $desc")
             getPotentialAccessorType(access, className, methodType)?.let { onType ->
                 return AccessorCollectorMV(onType.internalName, access, name, desc, signature, exceptions)
             }
@@ -384,14 +386,16 @@ class AtomicFUTransformer(
     // returns a type on which this is a potential accessor
     private fun getPotentialAccessorType(access: Int, className: String, methodType: Type): Type? {
         if (methodType.returnType !in AFU_TYPES && methodType.returnType != TRACE_BASE_TYPE) return null
-        return if (access and ACC_STATIC != 0) {
+        return if (access and ACC_STATIC != 0) { // 静态
             if (access and ACC_FINAL != 0 && methodType.argumentTypes.isEmpty()) {
                 // accessor for top-level atomic
                 getObjectType(className)
             } else {
-                // accessor for top-level atomic
-                if (methodType.argumentTypes.size == 1 && methodType.argumentTypes[0].sort == OBJECT)
-                    methodType.argumentTypes[0] else null
+                // accessor for top-level atomic / synthetic private field accessors for inner classes
+                if (methodType.argumentTypes.size == 1 && methodType.argumentTypes[0].sort == OBJECT) {
+                    println("getPotentialAccessorType, args: 1, ${methodType.argumentTypes[0]}")
+                    methodType.argumentTypes[0]
+                } else null
             }
         } else {
             // if it not static, then it must be final
@@ -519,10 +523,12 @@ class AtomicFUTransformer(
             signature: String?,
             value: Any?
         ): FieldVisitor? {
+            println("TransformerCV.visitField: $name, $desc")
             val fieldType = getType(desc)
             if (fieldType.sort == OBJECT && fieldType.internalName in AFU_CLASSES) {
                 val fieldId = FieldId(className, name, desc)
-                // skip field delegates except volatile delegated properties (e.g. val a: Int by atomic(0))
+                // skip field delegates (e.g. val a: Int by b)
+                // except volatile delegated properties (e.g. val a: Int by atomic(0))
                 if (fieldId.isFieldDelegate() && (fieldId != fieldDelegates[fieldId]!!.fieldId)) {
                     transformed = true
                     return null
@@ -640,6 +646,7 @@ class AtomicFUTransformer(
             signature: String?,
             exceptions: Array<out String>?
         ): MethodVisitor? {
+            println("TransformerCV.visitMethod: $name, $desc")
             val methodId = MethodId(className, name, desc, accessToInvokeOpcode(access))
             if (methodId in accessors || methodId in traceAccessors || methodId in removeMethods) {
                 // drop and skip the methods that were found in Phase 1

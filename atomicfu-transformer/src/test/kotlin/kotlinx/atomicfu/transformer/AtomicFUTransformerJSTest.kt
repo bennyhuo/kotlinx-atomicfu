@@ -8,17 +8,12 @@ import java.io.File
  */
 class AtomicFUTransformerJSTest {
 
-    fun doTest() {
-        val transformer = AtomicFUTransformer(
-            emptyList(),
-            File("atomicfu-testdata/build/classes/kotlin/main"),
-            File("atomicfu-testdata/build/atomicFU/"),
-        )
-        transformer.transform()
-    }
-
     @Test
     fun test() {
-        println("Hello")
+        val transformer = AtomicFUTransformerJS(
+            File("../build/js/packages/kotlinx.atomicfu-atomicfu-testdata/kotlin"),
+            File("../atomicfu-testdata/build/atomicFUJS/"),
+        )
+        transformer.transform()
     }
 }
