@@ -4,14 +4,14 @@ plugins {
 
 kotlin {
   jvm()
-  js(IR) {
+  js(LEGACY) {
     nodejs()
   }
 
   sourceSets {
     val commonMain by getting {
       dependencies {
-        implementation(project(":atomicfu"))
+        compileOnly(project(":atomicfu"))
       }
     }
   }

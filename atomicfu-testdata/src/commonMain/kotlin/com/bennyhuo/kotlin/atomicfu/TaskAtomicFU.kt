@@ -3,17 +3,29 @@ package com.bennyhuo.kotlin.atomicfu
 import kotlinx.atomicfu.AtomicInt
 import kotlinx.atomicfu.atomic
 import kotlinx.atomicfu.getAndUpdate
+import kotlin.js.JsExport
 
 const val STATE_READY = 0
 const val STATE_WORKING = 1
 const val STATE_DONE = 2
 const val STATE_CANCELLED = -1
 
+val topLevelProperty = atomic(true)
+
+val topLevelDelegateA by topLevelProperty
+
+val topLevelDelegateB by atomic(true)
+
 class TaskAtomicFU : Runnable {
 
-  private val state = atomic(STATE_READY)
+  val array = arrayOf("kotlinx-atomicfu", "kotlinx-atomicfu2")
 
-  //
+  val state = atomic(STATE_READY)
+
+  val stateA by state
+  val stateB by atomic(STATE_READY)
+
+  // willBeRemoved
   fun willBeRemoved(state: AtomicInt) {
 
   }
